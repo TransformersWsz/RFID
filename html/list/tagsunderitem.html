@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>tagsunderitem</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <style>
+        header {
+            background-color: #f2f2f2;
+        }
+
+        .flex-con {
+            overflow: auto
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode="item-hov" onclick="goback()">
+            <span class="aui-iconfont aui-icon-left">Back</span>
+        </a>
+        <div class="aui-title" style="color: black" id="title"></div>
+        <a class="aui-btn aui-pull-right" tapmode="item-hov" onclick="ok()">
+            <span class="aui-iconfont">Save</span>
+        </a>
+    </header>
+</body>
+
+</html>
+
+<script type="text/javascript">
+    function goback() {
+        api.execScript({
+            name: 'tagsunderitem',
+            frameName: 'tagsunderitem_frm',
+            script: 'goback();'
+        });
+    }
+
+    function ok() {
+        api.execScript({
+            name: 'tagsunderitem',
+            frameName: 'tagsunderitem_frm',
+            script: 'ok();'
+        });
+    }
+
+    apiready = function() {
+
+
+        api.addEventListener({
+            name:'swiperight'
+        }, function(ret, err) {
+            goback();
+        });
+
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        $api.text($api.byId("title"), api.pageParam.data);
+
+
+        var headerPos = $api.offset(header);
+        api.openFrame({
+            name: 'tagsunderitem_frm',
+            url: './tagsunderitem_frm.html',
+            rect: {
+                x: 0,
+                y: headerPos.h,
+                w: 'auto',
+                h: 'auto'
+            },
+            pageParam: {
+                data: api.pageParam.data
+            }
+        });
+    }
+</script>

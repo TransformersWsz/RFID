@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>cate_list_to_add_frame</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            background: #f0f0f0;
+        }
+
+        .h1 {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        .arrow {
+            float: right;
+            margin: 15px 15px 15px 0px;
+            height: auto;
+            width: auto;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in" id="rightarrow">
+
+        </ul>
+    </div>
+
+
+</body>
+<script type="text/javascript">
+
+
+    function test() {
+        api.refreshHeaderLoading();
+    }
+
+    apiready = function() {
+
+        api.removeEventListener({
+            name: 'swiperight'
+        });
+        api.addEventListener({
+            name:'swiperight'
+        }, function(ret, err){
+           api.execScript({
+               name: 'cate_list_to_add',
+               script: 'closeWin();'
+           });
+        });
+
+        api.setRefreshHeaderInfo({
+            loadingImg: 'widget://image/refresh.png',
+            bgColor: '#ccc',
+            textColor: '#fff',
+            textDown: 'pull down to refresh',
+            textUp: 'release to refresh',
+            textLoading: "loading...",
+            showTime: false
+        }, function(ret, err) {
+            judgeAndInit("category");
+            var data = $api.getStorage("category").data;
+            var length = data.length;
+            $api.dom('#rightarrow').innerHTML = "";
+
+            for (var i = 0; i < length; i++) {
+                var cate_id = getCate_id(data[i].cate_name);
+                var tempHtml = "<li class='aui-list-item' onclick=getLeftValue(" + cate_id + ")><div class='aui-list-item-inner aui-list-item-arrow'><div class='aui-list-item-title'>" + data[i].cate_name + "</div><div class='aui-list-item-right'><div class='aui-badge' style='position:relative;top:0; left:0'>" + getNumsOfSelectedTagsByCategoryFromChecklist(api.pageParam.listid, data[i].cate_name) + "</div></div></div></li>";
+                $api.dom('#rightarrow').innerHTML += tempHtml;
+            }
+            api.refreshHeaderLoadDone();
+
+        });
+        api.refreshHeaderLoading();
+    }
+
+    function getLeftValue(cate_id) {
+        var cate_name = getCate_name(cate_id);
+        api.openWin({
+            name: 'testtaglist',
+            url: './testtaglist.html',
+            animation: {
+                type: "curl",
+                subType: "from_bottom",
+                duration: 500
+            },
+            pageParam: {
+                data: cate_name,
+                listid: api.pageParam.listid,
+                isModify: api.pageParam.isModify
+            }
+        });
+    }
+</script>
+
+</html>

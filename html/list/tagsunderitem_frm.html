@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>tagsunderitem_frm</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/aui-dialog.js"></script>
+    <script type="text/javascript" src="../../script/common.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            flex: 1;
+            background-color: white;
+        }
+
+        main {
+            margin: 0 auto;
+            background-color: #fdfbfb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        article {
+            flex: 1;
+            margin: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .spacer {
+            flex: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .add {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, .075);
+            user-select: none;
+            -moz-user-select: none;
+            font-size: xx-large;
+            color: grey;
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .qwe {
+            margin-left: 15px;
+            background-size: cover;
+            width: 220px;
+            height: 220px;
+        }
+
+        .bottom {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        .h10 {
+            height: 30px;
+            line-height: 30px;
+            width: 100%;
+            padding-left: 15px;
+            background: #fdfbfb;
+            color: #757575;
+            font-size: 16px;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        p {
+            height: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main>
+        <article>
+            <div class="h10">
+                RFID tag
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in">
+                    <li class="aui-list-item">
+                        <div class="aui-list-item-inner">
+                            <div class="aui-list-item-title" id="tagcode">
+                                <span style="color: #e6e0e0">tag number</span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="h10">
+                Name
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in">
+                    <li class="aui-list-item" tapmode="item-hov" onclick="addTagname()">
+                        <div class="aui-list-item-inner" id="tagname">
+                            <span style="color: #e6e0e0">please input tag name</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="h10">
+                Room
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in">
+                    <li class="aui-list-item" tapmode="item-hov" onclick="addTagToRoom()">
+                        <div class="aui-list-item-inner">
+                            <div class="aui-list-item-title" id="roomname">
+                                <span style="color: #e6e0e0">please select one room</span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div class="h10">
+                Category
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in" id="categoryname">
+                    <li class="aui-list-item" tapmode="item-hov" onclick="addTagToCategories()">
+                        <div class="aui-list-item-inner">
+                            Add new category
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div class="h10">
+                Picture
+            </div>
+            <div class="qwe" id="pic">
+                <div class="add" onclick="changeAvatar()">+</div>
+            </div>
+        </article>
+
+
+    </main>
+    <p></p>
+    <p></p>
+    <div class="aui-btn aui-btn-danger aui-btn-block aui-btn-outlined" onclick="deleteThisItem()">Delete this item</div>
+    <p></p>
+    <p></p>
+
+</body>
+
+<script>
+    var dialog;
+
+    // 全局变量
+    var tag_pic = '';
+    var tag_name = '';
+    var tag_code = '';
+    var room_name = '';
+
+    // 自定义添加的类别html字符串
+    var cate_ids = [];
+    var cate_names = [];
+
+    var isUpdated = 0;
+
+    function deleteThisItem() {
+        api.confirm({
+            title: 'warning',
+            msg: "If this item is deleted, these data about it will be lost! Are you sure to continue?",
+            buttons: ['cancel', 'continue']
+        }, function(ret, err) {
+            if (ret.buttonIndex == 2) {
+                deleteTagByTag_name(tag_name);
+                api.sendEvent({
+                    name: 'updateitem',
+                });
+                api.closeWin({});
+            }
+        });
+    }
+
+
+    function ok() {
+        api.showProgress({
+            style: 'default',
+            animationType: 'fade',
+            title: 'Loading...',
+            modal: false
+        });
+
+        var room_id = -1;
+        if (room_name != "") {
+            room_id = getRoom_idByroom_name(room_name);
+        }
+
+        // 更新 tag_name, tag_pic
+        updateTag_name_pic(room_id, tag_code, tag_name, tag_pic);
+
+        // 更新 tags_categories
+        updateTagsCategoriesByTag_code(tag_code, cate_names);
+
+        api.hideProgress();
+        isUpdated = 0;
+
+        dialog.alert({
+            msg: 'Update item success',
+            buttons: ['OK']
+        }, function(ret) {
+            api.sendEvent({
+                name: 'updateitem',
+            });
+
+            api.closeWin({});
+        });
+    }
+
+    function goback() {
+        if (isUpdated == 1) {
+            api.confirm({
+                title: 'warning',
+                msg: "If you don't click the save button, these updated information will be lost.Are you sure to continue?",
+                buttons: ['cancel', 'continue']
+            }, function(ret, err) {
+                if (ret.buttonIndex == 2) {
+                    api.closeWin({});
+                }
+            });
+        } else {
+            api.sendEvent({
+                name: 'updateitem',
+            });
+
+            api.closeWin({});
+        }
+    }
+
+    apiready = function() {
+        dialog = new auiDialog({});
+
+        api.parseTapmode();
+
+        api.addEventListener({
+            name: 'swiperight'
+        }, function(ret, err) {
+            goback();
+        });
+
+        tag_name = api.pageParam.data;
+        tag_code = getTag_code(tag_name);
+        $api.byId("tagcode").innerHTML = tag_code;
+
+        var tag_item = getTagItemByTag_code(tag_code);
+        tag_pic = tag_item.tag_pic;
+        $api.byId("tagname").innerHTML = tag_item.tag_name;
+
+        var selectRoom_name = getRoom_nameByRoom_id(tag_item.room_id);
+        if (selectRoom_name == undefined) {
+            $api.byId("roomname").innerHTML = "";
+        } else {
+            if (selectRoom_name != "no room") {
+                $api.byId("roomname").innerHTML = selectRoom_name;
+            }
+        }
+
+        var ele = $api.dom('.qwe');
+        $api.css(ele, "background-image: url(" + tag_item.tag_pic + ")");
+
+        cate_ids = getCate_idsFromTagsCategories(tag_code);
+        cate_names = getCatenames(cate_ids);
+        var length = cate_names.length;
+        $api.byId('categoryname').innerHTML = '';
+        for (var i = 0; i < length; i++) {
+            var tempHtml = "<li class='aui-list-item'><div class='aui-list-item-inner'>" + cate_names[i] + "</div></li>";
+            $api.byId('categoryname').innerHTML += tempHtml;
+        }
+        $api.byId('categoryname').innerHTML += "<li class='aui-list-item' tapmode='item-hov' onclick='addTagToCategories()'><div class='aui-list-item-inner'>Add new category</div></li>";
+    }
+</script>
+
+</html>

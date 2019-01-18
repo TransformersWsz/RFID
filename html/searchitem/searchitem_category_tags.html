@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>searchitem_category_tags</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <style>
+        header {
+            background-color: #f2f2f2;
+        }
+
+        .flex-con {
+            overflow: auto
+        }
+
+
+        .h10 {
+            width: 100%;
+            height: 5px;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-pull-left aui-btn" onclick="goback()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">Small Items</div>
+    </header>
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-media-list" id="ul">
+
+        </ul>
+    </div>
+</body>
+
+</html>
+<script type="text/javascript">
+    function goback() {
+        api.closeWin({
+        });
+    }
+
+    function openSearchtagHtml(tag_id) {
+        api.execScript({
+            name: 'root',
+            frameName: 'main',
+            script: 'searchFirst();'
+        });
+
+        api.openWin({
+            name: 'searchtag',
+            url: '../searchtag.html',
+            pageParam: {
+                tag_id: tag_id,
+                isAllItems: 2
+            }
+        });
+    }
+
+
+
+
+    function turnToSearchtag(tag_id) {
+        var privacy = api.require('privacy');
+        privacy.camera(function(ret, err) {
+            if (ret == undefined || ret.status == false) {
+                api.confirm({
+                    title: 'Tip',
+                    msg: 'please authorize the app the right to access your camera.',
+                    buttons: ['cancel', 'go to setting']
+                }, function (ret, err) {
+                    var index = ret.buttonIndex;
+                    if (index == 2) {
+                        api.requestPermission({
+                            list: ['camera']
+                        }, function(ret, err){
+                            if (ret.list[0].granted == true) {
+                                openSearchtagHtml(tag_id);
+                            }
+                        });
+                    }
+                });
+
+            }
+            else {
+                openSearchtagHtml(tag_id);
+            }
+        });
+    }
+
+    function execRefresh() {
+        api.refreshHeaderLoading();
+    }
+
+    apiready = function() {
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        api.setRefreshHeaderInfo({
+            loadingImg: 'widget://image/refresh.png',
+            bgColor: '#ccc',
+            textColor: '#fff',
+            textDown: 'pull down to refresh',
+            textUp: 'release to refresh',
+            textLoading: "loading...",
+            showTime: false
+        }, function(ret, err) {
+            var cate_name = api.pageParam.data;
+            var cate_id = getCate_id(cate_name);
+            var tagids = getTagidsFromTagsCategories(cate_id);
+            var data = getTag_name_pics(tagids);
+
+            var length = data.length;
+            $api.dom('#ul').innerHTML = "";
+            for (var i = 0; i < length; i++) {
+                var tempHtml = "<li class='aui-list-item aui-list-item-middle' onclick='turnToSearchtag(" + data[i].tag_id + ")'><div class='aui-media-list-item-inner'><div class='aui-list-item-media' style='width: 3rem;'><img src='" + data[i].tag_pic + "' class='aui-img-round aui-list-img-sm'></div><div class='aui-list-item-inner'><div class='aui-list-item-text'><div class='aui-list-item-title aui-font-size-14'>" + data[i].tag_name + "</div><div class='aui-list-item-right'><div class='aui-col-xs-3'><i class='aui-iconfont aui-icon-search' style='color: #077cff'></i></div></div></div><div class='aui-list-item-text'>" + getRoom_nameByRoom_id(data[i].room_id) + "</div></div></div></li>";
+                $api.dom('#ul').innerHTML += tempHtml;
+            }
+            api.refreshHeaderLoadDone();
+        });
+        api.refreshHeaderLoading();
+    }
+</script>

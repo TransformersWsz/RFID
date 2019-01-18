@@ -1,0 +1,211 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>LISTS</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style>
+        header {
+            background-color: #f2f2f2;
+        }
+
+        header ul li {
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            display: none;
+            color: #323237;
+            position: relative;
+            font-size: 20px;
+        }
+
+        header ul li.active {
+            display: block;
+        }
+
+        #footer {
+            background-color: #f2f2f2;
+        }
+
+        #footer ul li {
+            padding-top: 36px;
+            padding-bottom: 4px;
+            background: url() no-repeat center 2px;
+            background-size: auto 30px;
+            text-align: center;
+        }
+
+        #footer ul li.active {
+            color: #6ab494;
+        }
+
+        .flex-con {
+            overflow: auto
+        }
+
+        .back {
+            height: 60%;
+            width: auto;
+            float: left;
+        }
+
+        .navbar {
+            display: -webkit-box;
+            -webkit-box-orient: horizontal;
+            position: relative;
+            height: 40px;
+            box-sizing: border-box;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .navbar-item {
+            display: block;
+            -webkit-box-flex: 1;
+            width: 100%;
+            line-height: 40px;
+            font-size: 16px;
+            text-align: center;
+            color: #000;
+        }
+
+        .navbar-item-hov {
+            background-color: rgba(254, 242, 228, 0.7);
+        }
+
+        .navbar-item-active {
+            color: #D43C33;
+        }
+
+        #navmark {
+            position: absolute;
+            left: 0px;
+            bottom: 0px;
+            -webkit-transition: 300ms;
+            text-align: center;
+            height: 2px;
+            background-color: #D43C33;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="wrap" class="flex-wrap flex-vertical">
+
+        <header class="aui-bar aui-bar-nav aui-bar-light" id="title">
+            <a class="aui-pull-left aui-btn" onclick="goback()">
+                <span class="aui-iconfont aui-icon-left"></span>
+            </a>
+            <div class="aui-title">Lists</div>
+        </header>
+        <nav class="navbar" id="firstHeaderIndex">
+            <a id="navbar-item-recommend" class="navbar-item navbar-item-active" tapmode="navbar-item-hov" onclick="setFrameGroupIndex(0);">Category</a>
+            <a id="navbar-item-rank" class="navbar-item" tapmode="navbar-item-hov" onclick="setFrameGroupIndex(1);">Room</a>
+            <a id="navbar-item-item" class="navbar-item" tapmode="navbar-item-hov" onclick="setFrameGroupIndex(2);">Item</a>
+            <mark id="navmark"></mark>
+        </nav>
+    </div>
+</body>
+
+</html>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript">
+    var numOfFrames;
+
+    function goback() {
+        api.closeWin({
+            name: 'lists'
+        });
+    }
+
+    function setFrameGroupStatus(frameIndex) {
+        switch (frameIndex) {
+            case 0:
+                {
+                    $api.byId('navbar-item-recommend').className = "navbar-item navbar-item-active";
+                    $api.byId('navbar-item-rank').className = "navbar-item";
+                    $api.byId('navbar-item-item').className = "navbar-item";
+                    var num = (api.winWidth / numOfFrames) * frameIndex;
+                    $api.css($api.byId('navmark'), "-webkit-transform:translate(" + num + "px,0)");
+
+                    break;
+                }
+            case 1:
+                {
+                    $api.byId('navbar-item-rank').className = "navbar-item navbar-item-active";
+                    $api.byId('navbar-item-recommend').className = "navbar-item";
+                    $api.byId('navbar-item-item').className = "navbar-item";
+                    var num = (api.winWidth / numOfFrames) * frameIndex;
+                    $api.css($api.byId('navmark'), "-webkit-transform:translate(" + num + "px,0)");
+                    break;
+                }
+            case 2:
+                {
+                    $api.byId('navbar-item-item').className = "navbar-item navbar-item-active";
+                    $api.byId("navbar-item-rank").className = "navbar-item";
+                    $api.byId('navbar-item-recommend').className = "navbar-item";
+                    var num = (api.winWidth / numOfFrames) * frameIndex;
+                    $api.css($api.byId('navmark'), "-webkit-transform:translate(" + num + "px,0)");
+                    break;
+                }
+            default:
+                break;
+        }
+    }
+
+    function setFrameGroupIndex(frameIndex) {
+        api.setFrameGroupIndex({
+            name: 'framegroup01',
+            index: frameIndex,
+            scroll: true
+        });
+    }
+
+    function openFirstFramegroup() {
+        api.openFrameGroup({
+            name: 'framegroup01',
+            background: '#fff',
+            scrollEnabled: true,
+            rect: {
+                x: 0,
+                y: $api.offset($api.byId("title")).h + $api.offset($api.byId("firstHeaderIndex")).h,
+                w: 'auto',
+                h: api.frameHeight - $api.offset($api.byId("title")).h - $api.offset($api.byId("firstHeaderIndex")).h ,
+            },
+            index: 0,
+            frames: [{
+                name: 'list_category',
+                url: './list/list_category.html',
+                bgColor: '#fff'
+            }, {
+                name: 'list_room',
+                url: './list/list_room.html',
+                bgColor: '#fff'
+            }, {
+                name: 'list_room',
+                url: './list/list_item.html',
+                bgColor: '#fff'
+            }]
+        }, function(ret, err) {
+            setFrameGroupStatus(ret.index);
+        });
+
+    }
+
+    apiready = function() {
+        $api.fixStatusBar($api.dom('header'));
+        api.setStatusBarStyle({
+            style: 'dark',
+            color: '#6ab494'
+        });
+        numOfFrames = 3;
+        $api.byId('navmark').style.width = api.winWidth / numOfFrames + 'px';
+        openFirstFramegroup();
+    }
+</script>

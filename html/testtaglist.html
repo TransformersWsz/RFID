@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>类别对应的列表标签</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <style>
+        section {
+            background-color: #fff;
+        }
+
+        section>div {
+            height: 70px;
+            line-height: 50px;
+            padding-left: 15px;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        .h1 {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        .h10 {
+            height: 5px;
+            background: #f0f0f0;
+        }
+
+        section {
+            background-color: #fff;
+        }
+
+        section>div {
+            height: 50px;
+            line-height: 50px;
+            padding-left: 15px;
+            font-size: 20px;
+        }
+
+        .arrow {
+            float: right;
+            margin: 15px 15px 15px 0px;
+            height: auto;
+            width: auto;
+            color: orange;
+        }
+
+        p {
+            height: 10px;
+        }
+
+        .aui-list-item-inner.aui-swipe-handle {
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+            background-color: #ffffff;
+        }
+
+        .aui-swipe-btn {
+            position: absolute;
+            right: 0;
+            z-index: 0;
+            height: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-flex: 1;
+            -webkit-box-pack: justify;
+            -webkit-justify-content: space-between;
+            justify-content: space-between;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+        }
+
+        .aui-swipe-btn .aui-btn {
+            border-radius: 0;
+            height: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+        }
+
+        .bottom {
+            margin-top: -2px;
+            height: 5px;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title"></div>
+    </header>
+
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-media-list aui-list-in" id="list">
+        </ul>
+    </div>
+
+
+</body>
+<script>
+    var names_pics = [];
+    var selectedtags = [];
+
+
+    function clickli(i) {
+        var res = $api.byId(i + '').checked;
+        $api.byId(i + '').checked = !$api.byId(i + '').checked;
+    }
+
+    function save() {
+        var length = names_pics.length;
+        selectedtags = [];
+        for (var i = 0; i < length; i++) {
+            if ($api.byId(i + '').checked == true) {
+                selectedtags.push(names_pics[i].tag_name);
+            }
+        }
+        updateChecklist(api.pageParam.listid, api.pageParam.data, selectedtags);
+    }
+
+    function closeWin() {
+        save();
+        api.execScript({
+            name: 'cate_list_to_add',
+            frameName: 'cate_list_to_add_frame',
+            script: 'test();'
+        });
+
+        api.closeWin({
+            name: "testtaglist"
+        });
+    }
+
+    apiready = function() {
+        api.removeEventListener({
+            name: 'swiperight'
+        });
+
+        api.addEventListener({
+            name:'swiperight'
+        }, function(ret, err){
+           closeWin();
+        });
+
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+
+
+        var cate_name = api.pageParam.data;
+        $api.text($api.byId("title"), cate_name);
+        var isModify = api.pageParam.isModify;
+        var cate_id = getCate_id(cate_name);
+        var tagids = getTagidsFromTagsCategories(cate_id);
+        names_pics = getTag_name_pics(tagids);
+        var length = names_pics.length;
+
+        for (var i = 0; i < length; i++) {
+            var res = judgeTagisSelectedFromCheckList(api.pageParam.listid, cate_name, names_pics[i].tag_name);
+            var tempHtml = "";
+            if (res == 1) {
+                tempHtml = "<li class='aui-list-item aui-list-item-middle' onclick=clickli(" + i + ")><div class='aui-media-list-item-inner'><div class='aui-list-item-media' style='width: 3rem;'><img src='" + names_pics[i].tag_pic + "' class='aui-list-img-sm'></div><div class='aui-list-item-inner'><div class='aui-list-item-text'><div class='aui-list-item-title aui-font-size-14'>" + names_pics[i].tag_name + "</div><div class='aui-list-item-right' tapmode onclick=clickli(" + i + ")><input type='checkbox' class='aui-checkbox' id = '" + i + "' checked></div></div></div></div></li>";
+            }
+            else {
+                tempHtml = "<li class='aui-list-item aui-list-item-middle' onclick=clickli(" + i + ")><div class='aui-media-list-item-inner'><div class='aui-list-item-media' style='width: 3rem;'><img src='" + names_pics[i].tag_pic + "' class='aui-list-img-sm'></div><div class='aui-list-item-inner'><div class='aui-list-item-text'><div class='aui-list-item-title aui-font-size-14'>" + names_pics[i].tag_name + "</div><div class='aui-list-item-right' tapmode onclick=clickli(" + i + ")><input type='checkbox' class='aui-checkbox' id = '" + i + "' ></div></div></div></div></li>";
+            }
+            $api.dom('#list').innerHTML += tempHtml;
+        }
+
+    }
+</script>
+
+</html>

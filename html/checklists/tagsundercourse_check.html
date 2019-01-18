@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>win1</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/doT.min.js"></script>
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <script type="text/javascript" src="../../script/common.js"></script>
+    <style>
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        .h10 {
+            width: 100%;
+            height: 5px;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode="item-hov" onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title"></div>
+        <a class="aui-btn aui-pull-right" tapmode="item-hov" onclick="check()">
+            <span class="aui-iconfont">Check</span>
+        </a>
+    </header>
+    <div class="h10"></div>
+</body>
+<script>
+
+    function closeWin() {
+        api.execScript({
+            name: 'root',
+            frameName: 'main',
+            script: 'homeFirst();'
+        });
+        api.closeWin({});
+    }
+
+    function hideProgress() {
+        api.hideProgress();
+    }
+
+    function check() {
+        api.showProgress({
+            style: 'default',
+            animationType: 'fade',
+            title: 'checking...',
+            text: '',
+            modal: true
+        });
+        setTimeout(hideProgress, 10000);
+        api.execScript({
+            name: "root",
+            frameName: "main",
+            script: "checkSecond();"
+        });
+    }
+
+    function hideProgress() {
+        api.hideProgress();
+    }
+
+
+    apiready = function () {
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        var coursename = getCourse_name(api.pageParam.course_id);
+        $api.text($api.byId("title"), coursename);
+
+
+        var headerPos = $api.offset(header);
+        api.openFrame({
+            name: 'tagsundercourse_check_frm',
+            url: './tagsundercourse_check_frm.html',
+            rect: {
+                x: 0,
+                y: headerPos.h,
+                w: 'auto',
+                h: 'auto'
+            },
+            pageParam: {
+                course_id: api.pageParam.course_id
+            }
+        });
+    }
+</script>
+
+</html>

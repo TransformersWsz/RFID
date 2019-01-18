@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>login</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <link rel="stylesheet" type="text/css" href="../css/login.css" />
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/aui-dialog.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <script type="text/javascript" src="../script/common.js"></script>
+    <style>
+        .test {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .other {
+            height: 2rem;
+            width: 7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -6.5rem;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="t_box">
+        <img class="logo" src="../image/ble.svg" />
+        <p class="intro">Connect to Bluetooth RFID scanner</p>
+    </header>
+    <div class="test" id="success">
+        <div class="aui-btn aui-btn-info other" tapmode="item-hov" onclick="turnToBlelist()">Connect</div>
+    </div>
+
+    <section class="main">
+        <p>Please choose your types</p>
+        <div class="block">
+            <div class="item" tapmode='item-hov' onclick="login('youth')">
+                <img src="../image/youth.svg" />
+                <span>Youth</span>
+            </div>
+            <div class="item" tapmode='item-hov' onclick="login('adult')">
+                <img src="../image/adult.svg" />
+                <span>Adult</span>
+            </div>
+            <div class="item" tapmode='item-hov' onclick="login('others')">
+                <img src="../image/others.svg" />
+                <span>Others</span>
+            </div>
+        </div>
+    </section>
+    <!-- <div style="height: 100px; width: 100px; background-color: orange" onclick="test()">Click me</div> -->
+</body>
+<script>
+    var dialog;
+
+    function test() {
+
+        api.notification({
+            sound: 'default',
+            vibrate:[100, 100, 100, 100]
+        });
+    }
+
+    function create() {
+        addWeek("Monday");
+        addWeek("Tuesday");
+        addWeek("Wednesday");
+        addWeek("Thursday");
+        addWeek("Friday");
+    }
+
+    function createCourse_week() {
+        addCourse("All");
+        addCourse("Maths");
+        addCourse("English");
+        addCourse("PE");
+        addCourse("Mandarin");
+        addCourse("Li");
+        addCourse("Humanities");
+        addCourse("Music");
+        addCourse("Computers");
+        addCourse("Art");
+        addCourse("Assembly");
+    }
+
+    function createCourses_weeks() {
+        addWeeks_Courses("Monday", "All");
+        addWeeks_Courses("Monday", "Maths");
+        addWeeks_Courses("Monday", "English");
+        addWeeks_Courses("Monday", "PE");
+        addWeeks_Courses("Monday", "Mandarin");
+        addWeeks_Courses("Monday", "Li");
+        addWeeks_Courses("Monday", "Humanities");
+
+        addWeeks_Courses("Tuesday", "All");
+        addWeeks_Courses("Tuesday", "Maths");
+        addWeeks_Courses("Tuesday", "English");
+        addWeeks_Courses("Tuesday", "PE");
+        addWeeks_Courses("Tuesday", "Mandarin");
+        addWeeks_Courses("Tuesday", "Music");
+
+        addWeeks_Courses("Wednesday", "All");
+        addWeeks_Courses("Wednesday", "Maths");
+        addWeeks_Courses("Wednesday", "English");
+        addWeeks_Courses("Wednesday", "Mandarin");
+        addWeeks_Courses("Wednesday", "Humanities");
+
+        addWeeks_Courses("Thursday", "All");
+        addWeeks_Courses("Thursday", "Maths");
+        addWeeks_Courses("Thursday", "English");
+        addWeeks_Courses("Thursday", "Humanities");
+        addWeeks_Courses("Thursday", "Music");
+        addWeeks_Courses("Thursday", "Computers");
+
+        addWeeks_Courses("Friday", "All");
+        addWeeks_Courses("Friday", "Maths");
+        addWeeks_Courses("Friday", "English");
+        addWeeks_Courses("Friday", "Mandarin");
+        addWeeks_Courses("Friday", "Art");
+        addWeeks_Courses("Friday", "Assembly");
+    }
+
+
+    function login(identity) {
+        if ($api.getStorage("isConnected") == 0 || $api.getStorage("isConnected") == undefined) {
+            dialog.alert({
+                msg: "Please connect bluetooth.",
+                buttons:['OK']
+            }, function(ret) {
+            });
+        }
+        else {
+            $api.setStorage('identity', identity);
+            if (identity == "youth") {
+                if ($api.getStorage("importCourses") == undefined || $api.getStorage("importCourses") == 0) {
+                    create();
+                    createCourse_week();
+                    createCourses_weeks();
+                    $api.setStorage("importCourses", 1);
+                }
+            }
+            else {
+                $api.setStorage("importCourses", 0);
+            }
+            api.closeFrame({
+                name: 'login'
+            });
+        }
+    }
+
+    function updateConnectBtn() {
+        $api.byId("success").innerHTML = "<div class='aui-btn aui-btn-success other' tapmode='item-hov' onclick='turnToBlelist()'>Connected</div>";
+    }
+
+    function turnToBlelist() {
+        api.openWin({
+            name: 'blelist',
+            url: './blelist.html',
+            pageParam: {
+                fromMain: 0
+            }
+
+        });
+    }
+
+    apiready = function() {
+        dialog = new auiDialog({});
+    }
+</script>
+
+</html>

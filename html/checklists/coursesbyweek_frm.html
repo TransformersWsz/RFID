@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>coursesbyweek</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/doT.min.js"></script>
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/aui-list-swipe.js"></script>
+    <script type="text/javascript" src="../../script/aui-collapse.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            flex: 1;
+        }
+
+        .bottom {
+            margin-top: -2px;
+            height: 10px;
+            background: #f0f0f0;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+
+        p {
+            height: 10px;
+        }
+
+
+        .aui-list-item-inner.aui-swipe-handle {
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+            background-color: #ffffff;
+        }
+        .aui-swipe-btn {
+            position: absolute;
+            right: 0;
+            z-index: 0;
+            height: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-flex: 1;
+            -webkit-box-pack: justify;
+            -webkit-justify-content: space-between;
+                    justify-content: space-between;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+                    align-items: center;
+        }
+        .aui-swipe-btn .aui-btn {
+            border-radius: 0;
+            height: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+                    align-items: center;
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in" id="ul">
+
+        </ul>
+    </div>
+
+</body>
+<script>
+    var swipe;
+    var collapse;
+
+    function turnToTagsUnderCourses(course_id) {
+        api.openWin({
+            name: 'tagsundercourse',
+            url: './tagsundercourse.html',
+            animation: {
+                type: "curl",
+                subType: "from_bottom",
+                duration: 500
+            },
+            pageParam: {
+                data: course_id
+            }
+        });
+    }
+
+    function execRefresh() {
+        api.refreshHeaderLoading();
+    }
+
+    function checkBtn(course_id) {
+        api.execScript({
+            name: "root",
+            frameName: "main",
+            script: "checkFirst();"
+        });
+
+        api.openWin({
+            name: 'tagsundercourse_check',
+            url: './tagsundercourse_check.html',
+            bgColor: '#f0f0f0',
+            animation: {
+                type: "curl",
+                subType: "from_bottom",
+                duration: 500
+            },
+            pageParam: {
+                course_id: course_id
+            }
+        });
+    }
+
+    apiready = function() {
+
+        api.setRefreshHeaderInfo({
+            loadingImg: 'widget://image/refresh.png',
+            bgColor: '#ccc',
+            textColor: '#fff',
+            textDown: 'pull down to refresh',
+            textUp: 'release to refresh',
+            textLoading: "loading...",
+            showTime: false
+        }, function(ret, err) {
+            var week_id = api.pageParam.data;
+            var week_name = getWeek_nameByWeek_id(week_id);
+            $api.text($api.byId("title"), week_name);
+
+            var courses = getCoursesByWeek_id(week_id);
+            var length = courses.length;
+            $api.dom("#ul").innerHTML = "";
+            for (var i = 0; i < length; i++) {
+                // var tempHtml = "<li class='aui-list-item' onclick='turnToTagsUnderCourses(" + courses[i].id + ")'><div class='aui-list-item-inner aui-list-item-arrow'>" + courses[i].course_name + "</div></li>";
+
+                var tempHtml = "<div class='aui-collapse-item'><li class='aui-list-item aui-collapse-header' tapmode><div class='aui-list-item-label-icon'><i class='aui-iconfont aui-icon-down aui-collapse-arrow'></i></div><div class='aui-list-item-inner aui-swipe-handle'>" +
+                    courses[i].course_name + "</div><div class='aui-swipe-btn'><div class='aui-btn aui-btn-success' onclick=checkBtn(" + courses[i].id +
+                    ")>check</div><div class='aui-btn aui-btn-info' onclick='turnToTagsUnderCourses(" + courses[i].id +
+                    ")'>modify</div></div></li> <div class='aui-collapse-content'>";
+
+
+                    var tag_ids = getTag_idsFromCourses_tagsByCourse_id(courses[i].id);
+                    var tagidsLength = tag_ids.length;
+
+                    // tempHtml +=
+                    //     "<li class='aui-list-item'><div class='aui-list-item-inner'><div class='aui-list-item-title'>" +
+                    //     tagidsLength + "</div></div></li>";
+
+                    for (var j = 0; j < tagidsLength; j++) {
+                        var tagname = getTag_nameByTag_id(tag_ids[j]);
+                        tempHtml +=
+                            "<li class='aui-list-item'><div class='aui-list-item-inner'><div class='aui-list-item-title'>" +
+                            tagname + "</div></div></li>";
+                    }
+
+                tempHtml += "</div></div><div class='bottom'></div>";
+                $api.dom('#ul').innerHTML += tempHtml;
+            }
+            swipe = new auiListSwipe(function (ret) {
+                // console.log(ret)
+            });
+
+            collapse = new auiCollapse({
+                autoHide: false //是否自动隐藏已经展开的容器
+            });
+            api.refreshHeaderLoadDone();
+        });
+
+        api.refreshHeaderLoading();
+
+    }
+</script>
+
+</html>

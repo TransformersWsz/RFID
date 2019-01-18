@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>cate_list_to_add</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            background: #f0f0f0;
+        }
+
+        .h1 {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        .arrow {
+            float: right;
+            margin: 15px 15px 15px 0px;
+            height: auto;
+            width: auto;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-pull-left aui-btn" onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title"></div>
+    </header>
+
+</body>
+<script type="text/javascript">
+
+    function closeWin() {
+        api.execScript({
+            name: 'checklist',
+            frameName: 'custom_checklist',
+            script: 'execRefresh();'
+        });
+        api.closeWin({});
+    }
+
+    apiready = function() {
+
+        
+
+
+
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+        var listname = getCheckListName(api.pageParam.listid);
+        $api.text($api.byId("title"), listname);
+
+        var headerPos = $api.offset(header);
+        api.openFrame({
+            name: 'cate_list_to_add_frame',
+            url: 'cate_list_to_add_frame.html',
+            rect: {
+                x: 0,
+                y: headerPos.h,
+                w: 'auto',
+                h: 'auto'
+            },
+            pageParam: {
+                isModify: 1,
+                listid: api.pageParam.listid
+            }
+        });
+    }
+</script>
+
+</html>

@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>connect</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/aui-dialog.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            flex: 1;
+            background-color: white;
+        }
+
+        main {
+            margin: 0 auto;
+            background-color: #fdfbfb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        article {
+            flex: 1;
+            margin: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .add {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, .075);
+            user-select: none;
+            -moz-user-select: none;
+            font-size: xx-large;
+            color: grey;
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .qwe {
+            margin-left: 15px;
+            background-size: cover;
+            width: 220px;
+            height: 220px;
+        }
+
+        .bottom {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        .h10 {
+            height: 30px;
+            line-height: 30px;
+            width: 100%;
+            padding-left: 15px;
+            background: #fdfbfb;
+            color: #757575;
+            font-size: 16px;
+        }
+
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        p {
+            height: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode="item-hov" onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left">Back</span>
+        </a>
+        <div class="aui-title" style="color: black">New Item</div>
+        <a class="aui-btn aui-pull-right" tapmode="item-hov" onclick="ok()">
+            <span class="aui-iconfont">Done</span>
+        </a>
+    </header>
+
+    <main>
+        <article>
+            <div class="h10">
+                RFID tag
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in">
+                    <li class="aui-list-item">
+                        <div class="aui-list-item-inner">
+                            <div class="aui-list-item-title" id="tagcode">
+                                <span style="color: #e6e0e0">tag number</span>
+                            </div>
+                            <div class="aui-list-item-right" tapmode="item-hov" onclick="connectRFIDTag()">
+                                <span style="color: #03a9f4; font-size: 18px">Connect</span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="h10">
+                Name
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in">
+                    <li class="aui-list-item" tapmode="item-hov" onclick="addTagname()">
+                        <div class="aui-list-item-inner" id="tagname">
+                            <span style="color: #e6e0e0">please input tag name</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="h10">
+                Room
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in">
+                    <li class="aui-list-item" tapmode="item-hov" onclick="addTagToRoom()">
+                        <div class="aui-list-item-inner">
+                            <div class="aui-list-item-title" id="roomname">
+                                <span style="color: #e6e0e0">please select one room</span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div class="h10">
+                Category
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in" id="categoryname">
+                    <li class="aui-list-item" tapmode="item-hov" onclick="addTagToCategories()">
+                        <div class="aui-list-item-inner">
+                            Add new category
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div class="h10">
+                Picture
+            </div>
+            <div class="qwe" id="pic">
+                <div class="add" onclick="changeAvatar()">+</div>
+            </div>
+        </article>
+    </main>
+
+</body>
+
+<script>
+    // 全局变量
+    var dialog;
+    var tag_pic = '';
+    var tag_name = '';
+    var tag_code = '';
+    var room_name = '';
+
+    // 自定义添加的类别html字符串
+    var cate_ids = [];
+    var cate_names = [];
+
+    var isTagCodeNull = 1;
+    var isTagNameNull = 1;
+
+    function closeWin() {
+        api.execScript({
+            name: "root",
+            frameName: "main",
+            script: "homeFirst();"
+        });
+        api.closeWin({
+        });
+    }
+
+    // 添加自定义类别
+    function addCustomCategory() {
+        dialog.prompt({
+            title: "category",
+            text: "please input category name",
+            buttons: ["cancel", "ok"]
+        }, function(ret) {
+            if (ret.buttonIndex == 2) {
+                var inputValue = ret.text;
+                if (inputValue == "") {
+                    dialog.alert({
+                        msg: "Category name cannot be empty",
+                        buttons:['ok']
+                    },function(ret){
+
+                    });
+                }
+                else {
+                    var res = isExistCate_name(inputValue);
+                    if (res != -1) {
+                        dialog.alert({
+                            msg: 'Duplicate category name.',
+                            buttons: ["ok"]
+                        },function(ret){
+                        });
+                    }
+                    else {
+                        addCate_name(inputValue);
+                        var tempHtml = "<li class='aui-list-item'><div class='aui-list-item-inner'>" + inputValue + "</div></li>";
+                        cate_names = [];
+                        cate_names.push(inputValue);
+                        $api.byId('categoryname').innerHTML = "";
+                        $api.byId('categoryname').innerHTML += tempHtml;
+                        $api.byId('categoryname').innerHTML += "<li class='aui-list-item' tapmode='item-hov' onclick='addTagToCategories()'><div class='aui-list-item-inner'>Add new category</div></li>";
+                    }
+                }
+            }
+        });
+    }
+
+    function takePic() {
+        api.getPicture({
+            sourceType: 'camera',
+            encodingType: 'png',
+            mediaValue: 'pic',
+            allowEdit: true,
+            quality: 60,
+            saveToPhotoAlbum: true
+        }, function(ret, err) {
+            // 获取拍照数据并处理
+            if (ret) {
+                tag_pic = ret.data;
+                if (tag_pic != "") {
+
+                    var ele = $api.dom('.qwe');
+                    $api.css(ele, "background-image: url(" + tag_pic + ")");
+                    var cache = $api.getStorage("cache");
+                    if (cache == undefined) {
+                        $api.setStorage("cache", 1);
+                    }
+                    else {
+                        cache++;
+                        $api.setStorage("cache", cache);
+                    }
+                }
+            }
+        });
+    }
+
+    function changeAvatar() {
+        var privacy = api.require('privacy');
+        privacy.camera(function(ret, err) {
+            if (ret == undefined || ret.status == false) {
+                api.confirm({
+                    title: 'Tip',
+                    msg: 'please authorize the app the right to access your camera.',
+                    buttons: ['cancel', 'go to setting']
+                }, function (ret, err) {
+                    var index = ret.buttonIndex;
+                    if (index == 2) {
+                        api.requestPermission({
+                            list: ['camera']
+                        }, function(ret, err){
+                            if (ret.list[0].granted == true) {
+                                takePic();
+                            }
+                        });
+                    }
+                });
+            }
+            else {
+                takePic();
+            }
+        });
+
+
+
+    }
+
+    function addTagname() {
+
+        dialog.prompt({
+            title: "item name",
+            text: "please input item name",
+            buttons: ["cancel", "ok"]
+        }, function(ret) {
+            if (ret.buttonIndex == 2) {
+                if (ret.text == "") {
+                    dialog.alert({
+                        title: "warning",
+                        msg: "Item name cannot be empty",
+                        buttons:['ok']
+                    },function(ret){
+
+                    });
+                }
+                else {
+                    var res = isTagnameDuplicateWithOthername(ret.text);
+                    if (res == 1) {
+                        dialog.alert({
+                            title: "error",
+                            msg: 'Duplicate item name.',
+                            buttons: ["ok"]
+                        },function(ret){
+                        });
+                    }
+                    else {
+                        $api.byId("tagname").innerHTML = ret.text;
+                        tag_name = ret.text;
+                        isTagNameNull = 0;
+                    }
+                }
+            }
+        });
+    }
+
+    function ok() {
+        if (isTagCodeNull == 1) {
+            dialog.alert({
+                msg: "Tag number is empty.",
+                buttons:['OK']
+            }, function(ret) {
+            });
+
+        }
+        else {
+            if (isTagNameNull == 1) {
+                dialog.alert({
+                    msg: "Tag name is empty.",
+                    buttons:['OK']
+                }, function(ret) {
+                });
+            }
+            else {
+                api.showProgress({
+                    style: 'default',
+                    animationType: 'fade',
+                    title: 'Loading...',
+                    modal: false
+                });
+
+                var room_id = -1;
+                if (room_name != "") {
+                    room_id = getRoom_idByroom_name(room_name);
+                }
+
+                judgeAndInit("tag");
+                // 先判断 tag_code 是否存在
+                var res = isExistTag_code(tag_code);
+                // 不存在
+                if (res == -1) {
+
+                    // 添加到 tag
+                    var some_tag_id = addTag_code_name_pic(room_id, tag_code, tag_name, tag_pic);
+                    // 添加到tags_categories
+                    judgeAndInit("tags_categories");
+                    var length = cate_names.length;
+                    for (var i = 0; i < length; i++) {
+                        addTagsCategories_tagid_cateid(some_tag_id, getCate_id(cate_names[i]));
+                    }
+                    api.hideProgress();
+
+                    dialog.alert({
+                        msg: "Add item success.",
+                        buttons:['OK']
+                    }, function(ret) {
+                        api.sendEvent({
+                            name: 'updateitem'
+                        });
+                        closeWin();
+                    });
+
+                }
+                // 存在
+                else {
+                    // 更新 tag_name, tag_pic
+                    updateTag_name_pic(room_id, tag_code, tag_name, tag_pic);
+
+                    // 更新 tags_categories
+                    updateTagsCategoriesByTag_code(tag_code, cate_names);
+
+                    api.hideProgress();
+
+                    dialog.alert({
+                        msg: "Update item success.",
+                        buttons:['OK']
+                    }, function(ret) {
+                        api.sendEvent({
+                            name: 'updateitem'
+                        });
+                        closeWin();
+                    });
+
+                }
+            }
+        }
+    }
+
+    // conect tag
+    function connectRFIDTag() {
+        api.execScript({
+            name: "root",
+            frameName: "main",
+            script: "connectSecond();"
+        });
+    }
+
+    // add tag to one room
+    function addTagToRoom() {
+        var UIMultiSelector = api.require('UIMultiSelector');
+        judgeAndInit("room");
+        var content = $api.getStorage("room");
+        var data = content.data;
+        var length = data.length;
+        var items = [];
+        for (var i = 0; i < length; i++) {
+            items.push({
+                status: "normal",
+                text: data[i].room_name
+            });
+        }
+        items.push({
+            status: "normal",
+            text: ""
+        });
+
+        UIMultiSelector.open({
+            rect: {
+                h: 244
+            },
+            text: {
+                title: 'select room',
+                leftBtn: 'cancel',
+                rightBtn: 'ok'
+            },
+            max: 1,
+            singleSelection: true,
+            maskClose: true,
+            styles: {
+                //mask: 'rgba(100,100,100,0.4)',
+                title: {
+                    bg: '#f5f5f5',
+                    color: 'rgb(0,0,0)',
+                    size: 16,
+                    h: 44
+                },
+                leftButton: {
+                    w: 80,
+                    h: 35,
+                    marginT: 5,
+                    marginL: 8,
+                    color: 'rgb(0,0,0)',
+                    bg: 'rgb(200,200,200)',
+                    size: 14,
+                },
+                rightButton: {
+                    w: 80,
+                    h: 35,
+                    marginT: 5,
+                    marginR: 8,
+                    color: 'rgb(0,0,0)',
+                    bg: '#ffd40d',
+                    size: 14,
+                },
+                item: {
+                    h: 35,
+                    bg: '#fff',
+                    bgActive: '#ffd40d',
+                    bgHighlight: '#ffd40d',
+                    color: 'rgb(0,0,0)',
+                    active: 'rgb(255,255,255)',
+                    highlight: 'rgb(255,255,255)',
+                    size: 14,
+                    lineColor: 'rgb(200,200,200)',
+                    textAlign: 'center',
+                }
+            },
+            animation: true,
+            items: items
+        }, function(ret, err) {
+            if (ret.eventType == "clickLeft") {
+                UIMultiSelector.close();
+            }
+            if (ret.eventType == "clickRight") {
+                if (ret.items.length == 0) {
+                    UIMultiSelector.close();
+                }
+                else {
+                    var selectedRoom_name = ret.items[0].text;
+                    if (selectedRoom_name == undefined) {
+                        UIMultiSelector.close();
+                    }
+                    if (selectedRoom_name != "") {
+                        room_name = selectedRoom_name;
+                        $api.byId("roomname").innerHTML = room_name;
+                    }
+                    UIMultiSelector.close();
+                }
+
+            }
+        });
+    }
+
+    // add tag to some categories
+    function addTagToCategories() {
+        var UIMultiSelector = api.require('UIMultiSelector');
+        judgeAndInit("category");
+        var content = $api.getStorage("category");
+        var data = content.data;
+        var length = data.length;
+        var items = [];
+        for (var i = 0; i < length; i++) {
+            items.push({
+                status: "normal",
+                text: data[i].cate_name
+            });
+        }
+        items.push({
+            status: "normal",
+            text: "custom category"
+        });
+
+        UIMultiSelector.open({
+            rect: {
+                h: 244
+            },
+            text: {
+                title: 'select category',
+                leftBtn: 'cancel',
+                rightBtn: 'ok',
+                selectAll: ''
+            },
+            max: 10,
+            singleSelection: false,
+            maskClose: true,
+            styles: {
+                //mask: 'rgba(100,100,100,0.4)',
+                title: {
+                    bg: '#f5f5f5',
+                    color: 'rgb(0,0,0)',
+                    size: 16,
+                    h: 44
+                },
+                leftButton: {
+                    w: 80,
+                    h: 35,
+                    marginT: 5,
+                    marginL: 8,
+                    color: 'rgb(0,0,0)',
+                    bg: 'rgb(200,200,200)',
+                    size: 14,
+                },
+                rightButton: {
+                    w: 80,
+                    h: 35,
+                    marginT: 5,
+                    marginR: 8,
+                    color: 'rgb(0,0,0)',
+                    bg: '#ffd40d',
+                    size: 14,
+                },
+                item: {
+                    h: 35,
+                    bg: '#fff',
+                    bgActive: '#ffd40d',
+                    bgHighlight: '#ffd40d',
+                    color: 'rgb(0,0,0)',
+                    active: 'rgb(255,255,255)',
+                    highlight: 'rgb(255,255,255)',
+                    size: 14,
+                    lineColor: 'rgb(200,200,200)',
+                    textAlign: 'center',
+                }
+            },
+            animation: true,
+            items: items
+        }, function(ret, err) {
+            if (ret.eventType == 'clickLeft') {
+                UIMultiSelector.close();
+            }
+            if (ret.eventType == 'clickRight') {
+                var selectedCategories = ret.items;
+                var isCustom = 0;
+                var length = selectedCategories.length;
+                if (length >= 1) {
+                    for (var i = 0; i < length; i++) {
+                        if (selectedCategories[i].text == "custom category") {
+                            isCustom = 1;
+                            break;
+                        }
+                    }
+                    //选择了自定义类别
+                    if (isCustom == 1) {
+                        addCustomCategory();
+                    }
+                    else {
+                        $api.byId('categoryname').innerHTML = '';
+                        cate_names = [];
+                        for (var i = 0; i < length; i++) {
+                            var tempHtml = "<li class='aui-list-item'><div class='aui-list-item-inner'>" + selectedCategories[i].text + "</div></li>";
+                            cate_names.push(selectedCategories[i].text);
+                            $api.byId('categoryname').innerHTML += tempHtml;
+                        }
+                        $api.byId('categoryname').innerHTML += "<li class='aui-list-item' tapmode='item-hov' onclick='addTagToCategories()'><div class='aui-list-item-inner'>Add new category</div></li>";
+                    }
+                }
+                UIMultiSelector.close();
+            }
+        });
+    }
+
+    apiready = function() {
+        dialog = new auiDialog({});
+
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        api.addEventListener({
+            name:'swiperight'
+        }, function(ret, err){
+            closeWin();
+        });
+
+        api.addEventListener({
+            name: 'findconnecttag'
+        }, function(ret, err) {
+            if (ret) {
+                tag_code = ret.value.tag_code;
+                if (tag_code.indexOf("666666") == 0) {
+                    dialog.alert({
+                        msg: "This is room tag, please choose the item tag.",
+                        buttons:['OK']
+                    }, function(ret) {
+                    });
+                }
+                else {
+
+                    $api.byId("tagcode").innerHTML = tag_code;
+                    isTagCodeNull = 0;
+
+                    var tag_item = getTagItemByTag_code(tag_code);
+                    if (tag_item != undefined) {
+                        tag_name = tag_item.tag_name;
+                        tag_pic = tag_item.tag_pic;
+                        $api.byId("tagname").innerHTML = tag_item.tag_name;
+                        isTagNameNull = 0;
+
+                        var selectRoom_name = getRoom_nameByRoom_id(tag_item.room_id);
+                        if (selectRoom_name == undefined) {
+                            $api.byId("roomname").innerHTML = "";
+                        }
+                        else {
+                            $api.byId("roomname").innerHTML = selectRoom_name;
+                        }
+
+                        var ele = $api.dom('.qwe');
+                        $api.css(ele, "background-image: url(" + tag_item.tag_pic + ")");
+
+                        cate_ids = getCate_idsFromTagsCategories(tag_code);
+                        cate_names = getCatenames(cate_ids)
+                        var length = cate_names.length;
+                        $api.byId('categoryname').innerHTML = '';
+                        for (var i = 0; i < length; i++) {
+                            var tempHtml = "<li class='aui-list-item'><div class='aui-list-item-inner'>" + cate_names[i] + "</div></li>";
+                            $api.byId('categoryname').innerHTML += tempHtml;
+                        }
+                        $api.byId('categoryname').innerHTML += "<li class='aui-list-item' tapmode='item-hov' onclick='addTagToCategories()'><div class='aui-list-item-inner'>Add new category</div></li>";
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</html>

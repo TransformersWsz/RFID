@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>LISTS</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/aui-toast.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <style>
+        .h10 {
+            height: 10px;
+            background: #f0f0f0;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode="item-hov" onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">Setting</div>
+    </header>
+
+    <div class="h10"></div>
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in">
+
+            <li class="aui-list-item" tapmode="item-hov" onclick="clearCache()">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title">Clear Cache</div>
+                    <div class="aui-list-item-right" style="font-size: 0.9rem" id="cache"></div>
+                </div>
+            </li>
+
+            <li class="aui-list-item" tapmode="item-hov" onclick="feedback()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">Feedback</div>
+                </div>
+            </li>
+
+        </ul>
+    </div>
+
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in">
+
+            <li class="aui-list-item" tapmode="item-hov" onclick="logout()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">Logout</div>
+                </div>
+            </li>
+
+        </ul>
+    </div>
+
+</body>
+
+</html>
+
+<script type="text/javascript">
+    function logout() {
+        $api.rmStorage("identity");
+
+        api.execScript({
+            name: 'root',
+            frameName: 'main',
+            script: 'disconnectAuto();'
+        });
+
+        api.execScript({
+            name: 'root',
+            frameName: 'main',
+            script: 'openLoginFrame();'
+        });
+
+        api.closeWin({
+        });
+
+    }
+
+    function closeWin() {
+        api.closeWin({});
+    }
+
+    function feedback() {
+        api.openWin({
+            name: 'feedback',
+            url: './feedback.html'
+        });
+    }
+
+
+
+
+
+    apiready = function() {
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        var cache = $api.getStorage("cache");
+        if (cache == undefined) {
+            cache = 0;
+            $api.setStorage("cache", 0);
+        }
+
+        var size = cache*0.5;
+        $api.text($api.byId("cache"), size + "MB");
+    }
+    var toast = new auiToast();
+
+    function clearCache() {
+        $api.setStorage("cache", 0);
+
+        $api.text($api.byId("cache"), "0MB");
+
+        toast.success({
+            title: "clear success",
+            duration: 1500
+        });
+    }
+</script>

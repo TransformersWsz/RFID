@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>coursesbyweek</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/doT.min.js"></script>
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/aui-list-swipe.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            flex: 1;
+        }
+
+        .bottom {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        section {
+            background-color: #fff;
+        }
+
+        section>div {
+            height: 70px;
+            line-height: 50px;
+            padding-left: 15px;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        section {
+            background-color: #fff;
+        }
+
+        section>div {
+            height: 50px;
+            line-height: 50px;
+            padding-left: 15px;
+            font-size: 20px;
+        }
+
+        p {
+            height: 10px;
+        }
+
+
+        .aui-list-item-inner.aui-swipe-handle {
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+            background-color: #ffffff;
+        }
+        .aui-swipe-btn {
+            position: absolute;
+            right: 0;
+            z-index: 0;
+            height: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-flex: 1;
+            -webkit-box-pack: justify;
+            -webkit-justify-content: space-between;
+                    justify-content: space-between;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+                    align-items: center;
+        }
+        .aui-swipe-btn .aui-btn {
+            border-radius: 0;
+            height: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+                    align-items: center;
+
+        }
+
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title"></div>
+    </header>
+
+
+
+</body>
+<script>
+
+    function closeWin() {
+        api.closeWin({
+        });
+    }
+
+    apiready = function() {
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        var week_name = getWeek_nameByWeek_id(api.pageParam.data);
+        $api.text($api.byId("title"), week_name);
+
+
+        var headerPos = $api.offset(header);
+        api.openFrame({
+            name: 'coursesbyweek_frm',
+            url: './coursesbyweek_frm.html',
+            rect: {
+                x: 0,
+                y: headerPos.h,
+                w: 'auto',
+                h: 'auto'
+            },
+            pageParam: {
+                data: api.pageParam.data
+            }
+        });
+
+    }
+</script>
+
+</html>

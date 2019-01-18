@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>connect</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/aui-dialog.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            display: flex;
+            flex-direction: column;
+
+        }
+
+        body {
+            flex: 1;
+            background-color: white;
+        }
+
+        main {
+            margin: 0 auto;
+            background-color: #fdfbfb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        article {
+            flex: 1;
+            margin: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .h10 {
+            height: 30px;
+            line-height: 30px;
+            width: 100%;
+            padding-left: 15px;
+            background: #fdfbfb;
+            color: #757575;
+            font-size: 16px;
+        }
+
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        p {
+            height: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode="item-hov" onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left">Back</span>
+        </a>
+        <div class="aui-title" style="color: black">New Room</div>
+        <a class="aui-btn aui-pull-right" tapmode="item-hov" onclick="ok()">
+            <span class="aui-iconfont">Done</span>
+        </a>
+    </header>
+
+    <main>
+        <article>
+            <div class="h10">
+                RFID tag
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in">
+                    <li class="aui-list-item">
+                        <div class="aui-list-item-inner">
+                            <div class="aui-list-item-title" id="roomcode">
+                                <span style="color: #e6e0e0">room number</span>
+                            </div>
+                            <div class="aui-list-item-right">
+                                <span style="color: #03a9f4; font-size: 18px" tapmode="item-hov" onclick="connectRFIDTag()">Connect</span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="h10">
+                Name
+            </div>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-list-in">
+                    <li class="aui-list-item" tapmode="item-hov" onclick="addRoomname()">
+                        <div class="aui-list-item-inner" id="roomname">
+                            <span style="color: #e6e0e0">please input room name</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </article>
+    </main>
+
+</body>
+
+<script>
+    // 全局变量
+    var dialog;
+    var room_code = '';
+    var room_name = '';
+
+    var isRoomCodeNull = 1;
+    var isRoomNameNull = 1;
+
+    function closeWin() {
+        api.execScript({
+            name: "root",
+            frameName: "main",
+            script: "homeFirst();"
+        });
+        api.closeWin({
+        });
+    }
+
+    function addRoomname() {
+
+        dialog.prompt({
+            title: "Room name",
+            text: "please input room name",
+            buttons: ["cancel", "ok"]
+        }, function(ret) {
+            if (ret.buttonIndex == 2) {
+                var inputValue = ret.text;
+                if (inputValue == "") {
+                    dialog.alert({
+                        msg: "Room name cannot be empty.",
+                        buttons:['ok']
+                    },function(ret){
+
+                    });
+                }
+                else {
+                    var res = isRoomnameDuplicateWithOthername(inputValue);
+                    if (res == 1) {
+                        dialog.alert({
+                            msg: 'Duplicate room name.',
+                            buttons: ["ok"]
+                        },function(ret){
+                        });
+                    }
+                    else {
+                        $api.byId("roomname").innerHTML = inputValue;
+                        room_name = inputValue;
+                        isRoomNameNull = 0;
+                    }
+                }
+            }
+        });
+
+
+        var dialogBox = api.require('dialogBox');
+        dialogBox.input({
+            keyboardType: 'default',
+            texts: {
+                title: 'room name',
+                placeholder: 'please input room name',
+                leftBtnTitle: 'cancel',
+                rightBtnTitle: 'ok'
+            },
+            styles: {
+                bg: '#fff',
+                corner: 2,
+                w: 300,
+                h: 170,
+                title: {
+                    h: 20,
+                    alignment: 'center',
+                    size: 15,
+                    color: '#000',
+                    marginT: 18,
+                },
+                input: {
+                    h: 40,
+                    marginT: 30,
+                    marginLeft: 10,
+                    marginRight: 10,
+                    textSize: 15,
+                    textColor: '#000',
+                    borderColor: "orange",
+                    borderWidth: 2
+                },
+                dividingLine: {
+                    width: 1,
+                    color: '#696969'
+                },
+                left: {
+                    bg: 'rgba(0,0,0,0)',
+                    color: '#007FFF',
+                    size: 18
+                },
+                right: {
+                    bg: 'rgba(0,0,0,0)',
+                    color: '#007FFF',
+                    size: 18
+                },
+                horizontalLine: {
+                    color: 'rgba(245,245,245,0)',
+                    height: 5
+                },
+                verticalLine: {
+                    color: 'rgba(245,245,245,0)',
+                    width: 10
+                },
+            }
+        }, function(ret) {
+            if (ret.eventType == 'right') {
+                var res = isRoomnameDuplicateWithOthername(ret.text);
+                if (res == 1) {
+                    dialog.alert({
+                        msg: "Duplicate room name.",
+                        buttons:['OK']
+                    }, function(ret) {
+                    });
+
+                }
+                else {
+                    if (ret.text == "") {
+                        dialog.alert({
+                            msg: "Room name cannot be empty.",
+                            buttons:['OK']
+                        }, function(ret) {
+                        });
+                    }
+                    else {
+                        $api.byId("roomname").innerHTML = ret.text;
+                        room_name = ret.text;
+                        isRoomNameNull = 0;
+                        dialogBox.close({
+                            dialogName: 'input'
+                        });
+                    }
+                }
+            } else {
+                dialogBox.close({
+                    dialogName: 'input'
+                });
+            }
+        });
+    }
+
+    function afterProgress(info) {
+        api.alert({
+            msg: info,
+        }, function(ret, err){
+            if( ret ){
+                api.execScript({
+                    name: 'lists',
+                    frameName: 'list_room',
+                    script: 'execRefresh();'
+                });
+                closeWin();
+            }
+            else{
+            }
+        });
+    }
+
+    // 未完成
+    function ok() {
+        if (isRoomCodeNull == 1) {
+            dialog.alert({
+                msg: "Room number is empty.",
+                buttons:['OK']
+            }, function(ret) {
+            });
+        }
+        else {
+            if (isRoomNameNull == 1) {
+                dialog.alert({
+                    msg: "Room name is empty.",
+                    buttons:['OK']
+                }, function(ret) {
+                });
+
+            }
+            else {
+                api.showProgress({
+                    style: 'default',
+                    animationType: 'fade',
+                    title: 'Loading...',
+                    modal: false
+                });
+
+
+                // 先判断 room_code 是否存在
+                var room_id = isExistRoom_code(room_code);
+                // 不存在
+                if (room_id == -1) {
+                    addRoom_code_name(room_code, room_name);
+                    api.hideProgress();
+                    afterProgress("Add room success.");
+                }
+                // 存在
+                else {
+                    updateRoom_name(room_code, room_name);
+                    api.hideProgress();
+                    afterProgress("Update room success.");
+                }
+            }
+        }
+    }
+
+    // conect tag
+    function connectRFIDTag() {
+        api.execScript({
+            name: "root",
+            frameName: "main",
+            script: "connectSecond();"
+        });
+    }
+
+    apiready = function() {
+        dialog = new auiDialog({});
+
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        api.removeEventListener({
+            name: 'swiperight'
+        });
+        api.addEventListener({
+            name:'swiperight'
+        }, function(ret, err){
+            closeWin();
+        });
+
+        api.removeEventListener({
+            name: 'findconnecttag'
+        });
+        api.addEventListener({
+            name: 'findconnecttag'
+        }, function(ret, err) {
+            if (ret) {
+                room_code = ret.value.tag_code;
+                if (room_code.indexOf("666666") == 0) {
+                    $api.byId("roomcode").innerHTML = room_code;
+                    isRoomCodeNull = 0;
+
+                    var tempRoomName = getRoom_name(room_code);
+                    if (tempRoomName != "") {
+                        $api.byId("roomname").innerHTML = tempRoomName;
+                        room_name = tempRoomName;
+                        isRoomNameNull = 0;
+                    }
+                }
+                else {
+                    alert(room_code + "is not room code.please check the tag.");
+                }
+            }
+        });
+    }
+</script>
+
+</html>

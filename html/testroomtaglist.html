@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>近距离搜索</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            flex: 1;
+        }
+
+        main {
+            margin: 0 auto;
+            background-color: #fdfbfb;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .2);
+        }
+
+        header h1 {
+            margin: 12px;
+            font-size: 20px;
+            line-height: 24px;
+            font-weight: normal;
+            user-select: none;
+            -moz-user-select: none;
+        }
+
+
+        .bottom {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+
+
+        section {
+            background-color: #fff;
+        }
+
+        section>div {
+            height: 70px;
+            line-height: 50px;
+            padding-left: 15px;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+
+        .h1 {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        .h10 {
+            height: 5px;
+            background: #f0f0f0;
+        }
+
+        section {
+            background-color: #fff;
+        }
+
+        section>div {
+            height: 50px;
+            line-height: 50px;
+            padding-left: 15px;
+			font-size: 20px;
+        }
+
+        .arrow {
+            float: right;
+            margin: 15px 15px 15px 0px;
+            height: auto;
+            width: auto;
+			color: orange;
+        }
+		p {
+			height: 10px;
+		}
+
+    </style>
+</head>
+
+<body>
+
+	<main>
+        <header>
+            <h1>Room Tag list</h1>
+        </header>
+
+    </main>
+
+
+
+
+    <!-- 迭代 -->
+    <script id="listTemp" type="text/x-dot-template">
+        {{~it.array:value:index}}
+        <div class="open-win" tapmode="item-hov" win="setting_image"><div style="width: 40px; height: 40px; margin: 5px; float: left; background-size: 100% 100%; background-image: url({{= value.tag_pic}})"></div>
+            <span style="margin-left: 10px">{{= value.tag_name}}</span>
+        </div>
+        <div class="bottom"></div>
+        {{~}}
+    </script>
+    <section id="list"></section>
+
+
+</body>
+<script>
+    var room_id;
+    var names_pics = [];
+
+
+	apiready = function() {
+        var room_name = api.pageParam.data;
+        room_id = getRoom_idByroom_name(room_name);
+
+        names_pics = getTag_name_picsByroom_id(room_id);
+
+        var listData = {"array": names_pics};
+        var listion = doT.template($api.dom('#listTemp').innerHTML);
+        $api.dom('#list').innerHTML = listion(listData);
+
+	}
+</script>
+
+</html>

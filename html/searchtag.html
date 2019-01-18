@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>search tag</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">Search Tag</div>
+    </header>
+</body>
+<script>
+
+    function closeWin() {
+        if (api.pageParam.isAllItems == 1) {
+            api.execScript({
+                name: 'search',
+                frameName: 'searchitem_allitems',
+                script: 'execRefresh();'
+            });
+        }
+        if (api.pageParam.isAllItems == 2) {
+            api.execScript({
+                name: 'searchitem_category_tags',
+                script: 'execRefresh();'
+            });
+        }
+        api.execScript({
+            name: 'root',
+            frameName: 'main',
+            script: 'checkFirst();'
+        });
+        api.closeWin({});
+    }
+
+    function openCamera(offheight) {
+        var FNPhotograph = api.require('FNPhotograph');
+        FNPhotograph.openCameraView({
+            rect: {
+                x: 0,
+                y: offheight,
+                w: "auto",
+                h: "auto"
+            },
+            orientation: 'portrait',
+            fixedOn: api.frameName,
+            isStatusBarHidden: false,
+            fixed: true
+        }, function(ret) {
+            FNPhotograph.addEventListener({
+                name: 'click'
+            }, function(ret) {
+                if (ret) {
+                    FNPhotograph.closeCameraView(
+                        function(ret) {
+                            if (ret) {
+                                alert(JSON.stringify(ret));
+                            }
+                        });
+                }
+            });
+        });
+    }
+
+    function openNewFrame(offheight) {
+        api.openFrame({
+            name: 'btnwithcamera',
+            url: './btnwithcamera.html',
+            rect: {
+                x: 0,
+                y: offheight,
+                w: "auto",
+                h: "auto"
+            },
+            pageParam: {
+                tag_id: api.pageParam.tag_id
+            }
+        });
+    }
+
+    apiready = function () {
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        
+        api.addEventListener({
+            name:'swiperight'
+        }, function(ret, err){
+           closeWin();
+        });
+
+        var headerPos = $api.offset(header);
+        openCamera(headerPos.h);
+        openNewFrame(headerPos.h);
+    }
+</script>
+
+</html>

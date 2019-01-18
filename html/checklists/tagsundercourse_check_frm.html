@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>win1</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/doT.min.js"></script>
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <script type="text/javascript" src="../../script/common.js"></script>
+    <style>
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        .test {
+            height: 100px;
+            width: 100px;
+            background-color: orange;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in" id="ul">
+
+        </ul>
+    </div>
+
+
+
+</body>
+<script>
+
+
+    var isChecked = 0;
+    var selectedtags;
+    var resAll;
+    var length;
+    var count = 0;
+    var checkRes = [];
+
+    function openSearchtagHtml(tag_id) {
+        api.execScript({
+            name: 'root',
+            frameName: 'main',
+            script: 'searchFirst();'
+        });
+
+        api.openWin({
+            name: 'searchtag',
+            url: '../searchtag.html',
+            pageParam: {
+                tag_id: tag_id
+            }
+        });
+    }
+
+    function search(tag_id) {
+        var privacy = api.require('privacy');
+        privacy.camera(function(ret, err) {
+            if (ret == undefined || ret.status == false) {
+                api.confirm({
+                    title: 'Tip',
+                    msg: 'please authorize the app the right to access your camera.',
+                    buttons: ['cancel', 'go to setting']
+                }, function (ret, err) {
+                    var index = ret.buttonIndex;
+                    if (index == 2) {
+                        api.requestPermission({
+                            list: ['camera']
+                        }, function(ret, err){
+                            if (ret.list[0].granted == true) {
+                                openSearchtagHtml(tag_id);
+                            }
+                        });
+                    }
+                });
+
+            }
+            else {
+                openSearchtagHtml(tag_id);
+            }
+        });
+    }
+
+
+    function initCheckRes() {
+        var items = [];
+        for (var i = 0; i < length; i++) {
+            items.push({
+                tag_code: resAll[i].tag_code,
+                isFound: 0
+            });
+        }
+        return items;
+    }
+
+    function updateCheckRes(tag_code) {
+        if (count == length) {
+            api.notification({
+                sound: 'random',
+                vibrate:[100, 100]
+            });
+            count = 0;
+            return 0;
+        }
+        else {
+            for (var i = 0; i < length; i++) {
+                if (checkRes[i].tag_code == tag_code) {
+                    if (checkRes[i].isFound == 0 ) {
+                        count++;
+                        checkRes[i].isFound = 1;
+                        return 1;
+                    }
+                    if (checkRes[i].isFound == 1) {
+                        return 2;
+                    }
+                    return 0;
+                }
+            }
+        }
+
+    }
+
+    apiready = function () {
+
+        api.removeEventListener({
+            name: 'checklist'
+        });
+        api.addEventListener({
+            name: 'checklist'
+        }, function(ret, err) {
+            if (ret) {
+                var tag_code = ret.value.tag_code;
+
+                tag_code = tag_code.substring(0, tag_code.length-2);
+                var res = updateCheckRes(tag_code);
+
+                if (res == 1) {
+                    api.execScript({
+                        name: 'tagsundercourse_check',
+                        script: 'hideProgress();'
+                    });
+                    api.refreshHeaderLoading();
+                }
+                if (res == 2) {
+                    api.execScript({
+                        name: 'tagsundercourse_check',
+                        script: 'hideProgress();'
+                    });
+                }
+            }
+        });
+
+        selectedtags = getTag_idsFromCourses_tagsByCourse_id(api.pageParam.course_id);
+        resAll = getTag_name_pics(selectedtags);
+        length = resAll.length;
+        checkRes = initCheckRes();
+
+        api.setRefreshHeaderInfo({
+            loadingImg: 'widget://image/refresh.png',
+            bgColor: '#ccc',
+            textColor: '#fff',
+            textDown: 'pull down to refresh',
+            textUp: 'release to refresh',
+            textLoading: "loading...",
+            showTime: false
+        }, function (ret, err) {
+            $api.dom("#ul").innerHTML = "";
+            // 未检测
+            for (var i = 0; i < length; i++) {
+                var tempHtml;
+                if (checkRes[i].isFound == 0) {
+                    tempHtml = "<li class='aui-list-item' tapmode='item-hov' onclick=search(" + resAll[i].tag_id + ")><div class='aui-list-item-inner'><div class='open-win'><div style='width: 40px; height: 40px; margin: 5px; float: left; background-size: 100% 100%; background-image: url(" + resAll[i].tag_pic + ")'></div><span style='margin-left: 10px; line-height: 50px;'>" + resAll[i].tag_name + "</span></div><div class='aui-list-item-right'><div class='aui-col-xs-3'><i class='aui-iconfont aui-icon-search' style='color: #077cff'></i></div></div></div></li>";
+                }
+                else {
+                    tempHtml = "<li class='aui-list-item' tapmode='item-hov' onclick=search(" + resAll[i].tag_id + ")><div class='aui-list-item-inner'><div class='open-win'><div style='width: 40px; height: 40px; margin: 5px; float: left; background-size: 100% 100%; background-image: url(" + resAll[i].tag_pic + ")'></div><span style='margin-left: 10px; line-height: 50px;'>" + resAll[i].tag_name + "</span></div><div class='aui-list-item-right'><div class='aui-col-xs-3'><i class='aui-iconfont aui-icon-correct' style='color: blue'></i></div></div></div></li>";
+                }
+                $api.dom("#ul").innerHTML += tempHtml;
+                api.parseTapmode();
+            }
+            api.refreshHeaderLoadDone();
+        });
+
+        api.refreshHeaderLoading();
+    }
+</script>
+
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>coursesbyweek</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/doT.min.js"></script>
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/aui-list-swipe.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            flex: 1;
+        }
+
+        .bottom {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        p {
+            height: 10px;
+        }
+
+
+        .aui-list-item-inner.aui-swipe-handle {
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+            background-color: #ffffff;
+        }
+        .aui-swipe-btn {
+            position: absolute;
+            right: 0;
+            z-index: 0;
+            height: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-flex: 1;
+            -webkit-box-pack: justify;
+            -webkit-justify-content: space-between;
+                    justify-content: space-between;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+                    align-items: center;
+        }
+        .aui-swipe-btn .aui-btn {
+            border-radius: 0;
+            height: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+                    align-items: center;
+
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in" id="ul">
+
+        </ul>
+    </div>
+    <p></p>
+    <div class="aui-content aui-margin-b-15" tapmode="item-hov" onclick="addMoreTagsToSomeCourse()">
+        <ul class="aui-list aui-list-in">
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title">Add more tags</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+
+</body>
+<script>
+    var swipe;
+
+    function addMoreTagsToSomeCourse() {
+        var tag_names = getTagnamesNotBelongtoSomeCourse(api.pageParam.data);
+        var items = [];
+        var length = tag_names.length;
+        if (length == 0) {
+            items.push({text: "", status: "normal"});
+        }
+        for (var i = 0; i < length; i++) {
+            items.push({status: "normal", text: tag_names[i]});
+        }
+
+        var UIMultiSelector = api.require('UIMultiSelector');
+		UIMultiSelector.open({
+			rect: {
+				h: 244
+			},
+			text: {
+				title: 'select tags',
+				leftBtn: 'cancel',
+				rightBtn: 'ok'
+			},
+			max: 100,
+			singleSelection: false,
+			maskClose: true,
+			styles: {
+				title: {
+					bg: '#f5f5f5',
+					color: 'rgb(0,0,0)',
+					size: 16,
+					h: 44
+				},
+				leftButton: {
+					w: 80,
+					h: 35,
+					marginT: 5,
+					marginL: 8,
+					color: 'rgb(0,0,0)',
+					bg: 'rgb(200,200,200)',
+					size: 14,
+				},
+				rightButton: {
+					w: 80,
+					h: 35,
+					marginT: 5,
+					marginR: 8,
+					color: 'rgb(0,0,0)',
+					bg: '#ffd40d',
+					size: 14,
+				},
+				item: {
+					h: 35,
+					bg: '#fff',
+					bgActive: '#ffd40d',
+					bgHighlight: '#ffd40d',
+					color: 'rgb(0,0,0)',
+					active: 'rgb(255,255,255)',
+					highlight: 'rgb(255,255,255)',
+					size: 14,
+					lineColor: 'rgb(200,200,200)',
+					textAlign: 'center',
+				},
+			},
+			animation: true,
+			items: items
+		}, function(ret, err) {
+			if (ret.eventType == 'clickLeft') {
+				UIMultiSelector.close();
+			}
+            if (ret.eventType == 'clickRight') {
+                if (ret.items[0].text == "") {
+                    UIMultiSelector.close();
+                }
+                else {
+                    var selectedtagitems = ret.items;
+                    var selectedtagnames = [];
+                    var selectedtagitemsLength = selectedtagitems.length;
+                    for (var i = 0; i < selectedtagitemsLength; i++) {
+                        selectedtagnames.push(selectedtagitems[i].text);
+                    }
+
+                    addTagsToCoursesTags(selectedtagnames, api.pageParam.data);
+                    var length = selectedtagnames.length;
+                    for (var i = 0; i < length; i++) {
+                        var tag_pic = getPic_nameBytag_name(selectedtagnames[i]);
+                        var tag_id = getTag_idBytag_name(selectedtagnames[i]);
+                        var tempHtml = "<li class='aui-list-item'><div class='aui-list-item-inner aui-swipe-handle' tapmode='item-hov'><div class='open-win' win='setting_image'><div style='width: 40px; height: 40px; margin: 5px; float: left; background-size: 100% 100%; background-image: url(" + tag_pic + ")'></div><span style='margin-left: 10px; line-height: 50px;'>" + selectedtagnames[i] + "</span></div></div><div class='aui-swipe-btn'><div class='aui-btn aui-btn-danger' onclick=deleteTag(" + tag_id + ")>delete</div></div></li><div class='bottom'></div>";
+                        $api.dom('#ul').innerHTML += tempHtml;
+                    }
+                    UIMultiSelector.close();
+                }
+            }
+		});
+    }
+
+    function deleteTag(tag_id) {
+        deleteTag_idByCourse_idFromCourses_tags(tag_id, api.pageParam.data);
+        api.refreshHeaderLoading();
+    }
+
+    apiready = function() {
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        api.setRefreshHeaderInfo({
+            loadingImg: 'widget://image/refresh.png',
+            bgColor: '#ccc',
+            textColor: '#fff',
+            textDown: 'pull down to refresh',
+            textUp: 'release to refresh',
+            textLoading: "loading...",
+            showTime: false
+        }, function(ret, err) {
+            var course_id = api.pageParam.data;
+            var course_name = getCourse_name(course_id);
+            $api.text($api.byId("title"), course_name);
+            var tag_ids = getTag_idsFromCourses_tagsByCourse_id(course_id);
+            var names_pics = getTag_name_pics(tag_ids);
+            var length = names_pics.length;
+            $api.dom("#ul").innerHTML = "";
+            for (var i = 0; i < length; i++) {
+                var tag_id = getTag_idBytag_name(names_pics[i].tag_name);
+                var tempHtml = "<li class='aui-list-item'><div class='aui-list-item-inner aui-swipe-handle' tapmode='item-hov'><div class='open-win' win='setting_image'><div style='width: 40px; height: 40px; margin: 5px; float: left; background-size: 100% 100%; background-image: url(" + names_pics[i].tag_pic + ")'></div><span style='margin-left: 10px; line-height: 50px;'>" + names_pics[i].tag_name + "</span></div></div><div class='aui-swipe-btn'><div class='aui-btn aui-btn-danger' onclick=deleteTag(" + tag_id + ")>delete</div></div></li><div class='bottom'></div>";
+                $api.dom('#ul').innerHTML += tempHtml;
+            }
+
+            swipe = new auiListSwipe(function(ret) {
+
+            });
+
+            api.refreshHeaderLoadDone();
+        });
+        api.refreshHeaderLoading();
+    }
+</script>
+
+</html>

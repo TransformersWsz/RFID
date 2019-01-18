@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>list_category</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/aui-dialog.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            background: #f0f0f0;
+        }
+
+        .h1 {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+
+
+        .arrow {
+            float: right;
+            margin: 15px 15px 15px 0px;
+            height: auto;
+            width: auto;
+        }
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in" id="rightarrow">
+
+        </ul>
+    </div>
+
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in">
+            <li class="aui-list-item" onclick="turnToUnknownCategory()">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title" tapmode="item-hov">show tags without category</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in">
+            <li class="aui-list-item" tapmode="item-hov" onclick="addCustomCategory()">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title" >Add new category</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+</body>
+<script type="text/javascript">
+    var dialog;
+
+    function turnToUnknownCategory() {
+        api.openWin({
+            name: 'tagswithoutcategory',
+            url: './tagswithoutcategory.html',
+            animation: {
+                type: "curl",
+                subType: "from_bottom",
+                duration: 500
+            }
+        });
+    }
+
+
+    // 添加自定义类别
+    function addCustomCategory() {
+        dialog.prompt({
+            title: "category",
+            text: "please input category name",
+            buttons: ["cancel", "ok"]
+        }, function(ret) {
+            if (ret.buttonIndex == 2) {
+                var inputValue = ret.text;
+
+                if (inputValue == "") {
+                    dialog.alert({
+                        title: "warning",
+                        msg: "Category cannot be empty",
+                        buttons:['OK']
+                    }, function(ret) {
+                    });
+                }
+                else {
+                    var res = isDuplicateCate_nameWithOtherCategoty(inputValue);
+
+                    if (res >= 1) {
+                        dialog.alert({
+                            title: "error",
+                            msg: "Duplicate category name",
+                            buttons:['OK']
+                        },function(ret){
+
+                        });
+                    }
+                    else {
+                        addCate_name(inputValue);
+                        var tempHtml = "<li class='aui-list-item'><div class='aui-list-item-inner aui-list-item-arrow'>" + inputValue + "</div></li>";
+                        $api.dom('#rightarrow').innerHTML += tempHtml;
+                    }
+                }
+            }
+        });
+    }
+
+
+    function execRefresh() {
+        api.refreshHeaderLoading();
+    }
+
+    apiready = function() {
+        dialog = new auiDialog({});
+        api.setRefreshHeaderInfo({
+            loadingImg: 'widget://image/refresh.png',
+            bgColor: '#ccc',
+            textColor: '#fff',
+            textDown: 'pull down to refresh',
+            textUp: 'release to refresh',
+            textLoading: "loading...",
+            showTime: false
+        }, function(ret, err) {
+            judgeAndInit("category");
+            var data = $api.getStorage("category").data;
+            var length = data.length;
+            $api.dom('#rightarrow').innerHTML = "";
+            for (var i = 0; i < length; i++) {
+                var tempHtml = "<li class='aui-list-item'><div class='aui-list-item-inner aui-list-item-arrow'>" + data[i].cate_name + "</div></li>";
+                $api.dom('#rightarrow').innerHTML += tempHtml;
+            }
+            $api.dom('#rightarrow').onclick = function(e) {
+                const text = e.target.textContent;
+                api.openWin({
+                    name: 'tagsundercategory',
+                    url: './tagsundercategory.html',
+                    animation: {
+                        type: "curl",
+                        subType: "from_bottom",
+                        duration: 500
+                    },
+                    pageParam: {
+                        data: text
+                    }
+                });
+            };
+            api.refreshHeaderLoadDone();
+
+        });
+        api.refreshHeaderLoading();
+    }
+</script>
+
+</html>

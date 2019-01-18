@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>week_checklist</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/aui-dialog.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            background: #f0f0f0;
+        }
+
+        .h1 {
+            height: 1px;
+            margin-left: 15px;
+            background: #f0f0f0;
+        }
+
+        .h10 {
+            height: 5px;
+            background: #f0f0f0;
+        }
+
+
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">Calendar</div>
+    </header>
+
+</body>
+<script>
+    var dialog;
+
+    function closeWin() {
+        api.closeWin({});
+    }
+
+    function test() {
+        $api.rmStorage("weeks_courses");
+    }
+
+
+
+    function turnToCoursesByWeek(week_id) {
+        api.openWin({
+            name: 'coursesbyweek',
+            url: './checklists/coursesbyweek.html',
+            animation: {
+                type: "curl",
+                subType: "from_bottom",
+                duration: 500
+            },
+            pageParam: {
+                data: week_id
+            }
+        });
+    }
+
+    function execRefresh() {
+        api.refreshHeaderLoading();
+    }
+    apiready = function() {
+        dialog = new auiDialog({});
+
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        if ($api.getStorage("identity") != "youth") {
+            dialog.alert({
+                msg: "This function is only used for school test user. And you will see nothing.",
+                buttons:['OK']
+            }, function(ret) {
+            });
+        }
+        else {
+            var headerPos = $api.offset(header);
+            api.openFrame({
+                name: 'calendar_frm',
+                url: './calendar_frm.html',
+                rect: {
+                    x: 0,
+                    y: headerPos.h,
+                    w: 'auto',
+                    h: 'auto'
+                }
+            });
+        }
+
+
+    }
+</script>
+
+</html>

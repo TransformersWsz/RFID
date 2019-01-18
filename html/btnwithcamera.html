@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>btnwithcamera</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <script type="text/javascript" src="../script/common.js"></script>
+    <style>
+        html,
+        body {
+            background-color: transparent;
+            overflow: hidden;
+            height: 100%;
+        }
+        #search {
+            height: 60px;
+            line-height: 60px;
+            width: 150px;
+            margin-top: 50px;
+            margin-left: auto;
+            margin-right: auto
+        }
+        #react {
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 400px;
+            height: 300px;
+            border: 3px solid white;
+        }
+
+        #content {
+            margin-top: 100px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 400px;
+            height: 50px;
+            font-size: 25px;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content"></div>
+
+    <div id="react">
+
+    </div>
+
+    <div class="aui-btn aui-btn-info aui-btn-block aui-btn-sm" id="search" onclick="search()">Search</div>
+</body>
+<script>
+    var tag_code;
+    var rssi;
+    var count = 0;
+    var isFirstTurnToGreen = 1;
+    var searchCanUse = 1;
+
+    apiready = function() {
+        $api.setStorage("tag_id", api.pageParam.tag_id);
+
+
+        api.addEventListener({
+            name:'swiperight'
+        }, function(ret, err){
+           api.execScript({
+               name: 'searchtag',
+               script: 'closeWin();'
+           });
+        });
+
+
+        api.addEventListener({
+            name: 'searchtag'
+        }, function(ret, err) {
+            if (ret) {
+                // console.log(JSON.stringify(ret.value));
+                var tempRssi = ret.value.rssi;
+                if (tempRssi >= 40 && tempRssi < 60) {
+                    $api.text($api.byId("content"), 'The item is in your room.');
+                    $api.css($api.byId("react"), "border: 3px solid red");
+                    console.log(JSON.stringify(ret.value));
+                }
+                else {
+                    if (tempRssi >= 60 && tempRssi < 70) {
+                        $api.text($api.byId("content"), 'You are getting close to the item.');
+                        $api.css($api.byId("react"), "border: 3px solid yellow");
+                        console.log(JSON.stringify(ret.value));
+                    }
+                    else {
+                        if (tempRssi >= 70) {
+                            $api.text($api.byId("content"), 'The item is right there.');
+
+                            $api.css($api.byId("react"), "border: 3px solid green");
+                            if (isFirstTurnToGreen == 1) {
+                                isFirstTurnToGreen = 0;
+                                api.notification({
+                                    sound: 'default',
+                                    vibrate:[100, 100, 100, 100]
+                                });
+                            }
+                            console.log(JSON.stringify(ret.value));
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function recoverBtn() {
+        $api.text($api.byId("content"), '');
+        $api.addCls($api.byId("search"), 'aui-btn-info');
+        $api.css($api.byId("react"), "border: 3px solid white");
+        count = 0;
+        searchCanUse = 1;
+        isFirstTurnToGreen = 1;
+    }
+
+    function search() {
+        if (searchCanUse == 1) {
+
+            $api.removeCls($api.byId("search"), 'aui-btn-info');
+            $api.text($api.byId("content"), 'Searching...');
+            searchCanUse = 0;
+            setTimeout(recoverBtn, 40000);
+            api.execScript({
+                name: 'root',
+                frameName: 'main',
+                script: 'searchSecond();'
+            });
+        }
+    }
+</script>
+</html>

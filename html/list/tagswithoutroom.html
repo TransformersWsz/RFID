@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>tagswithoutroom</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/aui.css" />
+    <script type="text/javascript" src="../../script/doT.min.js"></script>
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script type="text/javascript" src="../../script/storage.js"></script>
+    <script type="text/javascript" src="../../script/common.js"></script>
+    <style>
+
+        p {
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">Tags Without Room</div>
+    </header>
+
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-list-in" id="ul">
+
+        </ul>
+    </div>
+
+</body>
+
+<script>
+
+    function closeWin() {
+        api.closeWin({});
+    }
+
+    apiready = function() {
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header);
+
+        api.setRefreshHeaderInfo({
+            loadingImg: 'widget://image/refresh.png',
+            bgColor: '#ccc',
+            textColor: '#fff',
+            textDown: 'pull down to refresh',
+            textUp: 'release to refresh',
+            textLoading: "loading...",
+            showTime: false
+        }, function (ret, err) {
+            var names_pics = getTag_Pics_namesWithoutRoom();
+            var length = names_pics.length;
+            $api.dom("#ul").innerHTML = "";
+            for (var i = 0; i < length; i++) {
+                var tempHtml = "<li class='aui-list-item' tapmode='item-hov'><div class='aui-list-item-inner'><div class='open-win' win='setting_image'><div style='width: 40px; height: 40px; margin: 5px; float: left; background-size: 100% 100%; background-image: url(" + names_pics[i].tag_pic + ")'></div><span style='margin-left: 10px; line-height: 50px;'>" + names_pics[i].tag_name + "</span></div></div></li>";
+                $api.dom("#ul").innerHTML += tempHtml;
+            }
+            api.refreshHeaderLoadDone();
+        });
+
+        api.refreshHeaderLoading();
+
+
+    }
+</script>
+
+</html>

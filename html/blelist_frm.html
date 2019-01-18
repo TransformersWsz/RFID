@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>win1</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/aui-dialog.js"></script>
+    <script type="text/javascript" src="../script/storage.js"></script>
+    <script type="text/javascript" src="../script/common.js"></script>
+    <style>
+        .item-hov {
+            background-color: #EAEAEA;
+        }
+
+        .test {
+            height: 100px;
+            width: 100px;
+            background-color: orange;
+        }
+
+        .h10 {
+            width: 100%;
+            height: 5px;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-media-list" id="ul">
+
+        </ul>
+    </div>
+
+
+</body>
+<script>
+
+    var dialog;
+
+    function closeWin() {
+        if (api.pageParam.fromMain == 0) {
+            api.execScript({
+                name: 'root',
+                frameName: 'login',
+                script: 'updateConnectBtn();'
+            });
+        }
+        api.closeWin({
+            name: 'blelist'
+        });
+    }
+
+    function connect(uuid) {
+        $api.setStorage("uuid", uuid);
+        api.showProgress({
+            style: 'default',
+            animationType: 'fade',
+            title: '',
+            text: "connecting...",
+            modal: false
+        });
+
+        api.execScript({
+            name: 'root',
+            frameName: 'main',
+            script: 'connectAuto();'
+        });
+    }
+
+    apiready = function() {
+        dialog = new auiDialog({});
+        api.addEventListener({
+            name: 'loginToConnectBle'
+        }, function(ret, err) {
+            if (ret) {
+                var bleinfo = ret.value.bleinfo;
+                if (bleinfo != undefined) {
+                    var length = bleinfo.length;
+                    $api.dom('#ul').innerHTML = "";
+                    for (var i = 0; i < length; i++) {
+                        var name = "empty";
+                        if (bleinfo[i].name != undefined) {
+                            name = bleinfo[i].name;
+                        }
+                        var tempHtml = "<li class='aui-list-item aui-list-item-middle' tapmode='item-hov' onclick=connect('" + bleinfo[i].uuid +
+                            "')><div class='aui-media-list-item-inner'><div class='aui-list-item-media' style='width: 3rem;'><img src='../image/ble.svg' class='aui-img-round aui-list-img-sm'></div><div class='aui-list-item-inner'><div class='aui-list-item-text'><div class='aui-list-item-title aui-font-size-14'>" +
+                            name + "</div></div><div class='aui-list-item-text'>" + bleinfo[i].uuid + "</div></div></div></li>"
+                        $api.dom('#ul').innerHTML += tempHtml;
+                    }
+                    api.parseTapmode();
+                }
+            } else {
+
+            }
+        });
+
+
+        api.removeEventListener({
+            name: 'toConnectBle'
+        });
+        api.addEventListener({
+            name: 'toConnectBle'
+        }, function(ret, err) {
+            api.hideProgress();
+            if (ret) {
+                if (ret.value.isConnected == 1) {
+                    $api.setStorage("isConnected", 1);
+                    api.toast({
+                        msg: 'connect success',
+                        duration: 2000,
+                        location: 'bottom',
+                        global: true
+                    });
+                    closeWin();
+                }
+            } else {
+                $api.rmStorage("uuid");
+                dialog.alert({
+                    msg: "Connect failure.please try again.",
+                    buttons:['OK']
+                }, function(ret) {
+                });
+
+            }
+        });
+
+        api.setRefreshHeaderInfo({
+            loadingImg: 'widget://image/refresh.png',
+            bgColor: '#ccc',
+            textColor: '#fff',
+            textDown: 'pull down to refresh',
+            textUp: 'release to refresh',
+            textLoading: "loading...",
+            showTime: false
+        }, function(ret, err) {
+            fnSubmit();
+            api.refreshHeaderLoadDone();
+        });
+        api.refreshHeaderLoading();
+    }
+
+    function fnSubmit() {
+        api.execScript({
+            name: 'root',
+            frameName: 'main',
+            script: 'scanNear();'
+        });
+    }
+</script>
+
+</html>
